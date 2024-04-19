@@ -35,7 +35,7 @@ def index():
 
 # login page
 @app.route("/login")
-def login():    
+def login():
     return render_template("login.jinja")
 
 # handles a post request when the user clicks the log in button
@@ -93,6 +93,11 @@ def home():
 
     friList = friList if friList is not None else ['hi']
     return render_template("home.jinja", username=username, all_fris=friList, friend_requests=frirequestList)
+
+# handles a post request when the user clicks the log out button
+@app.route("/logout")
+def logout():
+    return render_template("logout.jinja")
 
 
 if __name__ == '__main__':

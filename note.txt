@@ -24,11 +24,6 @@ Flask tutorial
 https://www.youtube.com/watch?v=MwZwr5Tvyxo&list=PL-osiE80TeTs4UjLw5MM6OjgkjFeUxCYH&index=2&ab_channel=CoreySchafer
 
 
-Github Main 
-https://github.sydney.edu.au/vpen5935/INFO2222-Group-Assignment
-
-
-
 Pwd -- SHA256  -- less collision
 salt + hash (remember the salt )
 
