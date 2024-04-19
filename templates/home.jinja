@@ -145,6 +145,8 @@
     let receiver;
     let public_key = '1';
 
+    //console.log(receiver); //checking the rev is updated
+
     Cookies.set('username', username);
     //Cookies.set('username', receiver);
 
@@ -161,8 +163,10 @@
     function send() {
         let message = $("#message").val();
         console.log(receiver);
+        console.log(public_key);
+
         $("#message").val("");
-        socket.emit("send", username,receiver, message, room_id);  
+        socket.emit("send", username,receiver, public_key,message, room_id);  
     } 
 
     // we emit a join room event to the server to join a room
@@ -213,6 +217,7 @@
 
     //////////////////////////chat room ////////////////////////
     function chat_fri(recv) {
+        console.log(room_id);
         receiver = recv;
         socket.emit("join", username, recv, (res) => {
 

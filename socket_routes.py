@@ -32,17 +32,8 @@ def connect():
     # so on client connect, the room needs to be rejoined
     join_room(int(room_id))
 
-    # display message_history
-    # all_msg = db.display_msg(username,receiver)
-    # friList = friList if friList is not None else []
-    # for msg in all_msg:
-    #     emit("incoming", (msg, "blue"), to=int(room_id))
-
     emit("incoming", (f"{username} has connected", "green"), to=int(room_id))
     
-    #is online
-    onlineUsr.add(username)
-    emit("incoming", (f"{onlineUsr} is online", "green"), to=int(room_id))
 
 # event when client disconnects
 # quite unreliable use sparingly
@@ -54,16 +45,15 @@ def disconnect():
         return
     emit("incoming", (f"{username} has disconnected", "red"), to=int(room_id))
 
-    onlineUsr.remove(username)
 
 # send message event handler
 @socketio.on("send")
-def send(sender_name, receiver_name, message, room_id):
+def send(sender_name, receiver_name,key, message, room_id):
     emit("incoming", (f"{onlineUsr} is online", "green"), to=int(room_id))
     if receiver_name in onlineUsr:
 
         # send to db
-        # db.send_msg(key,message,sender_name,receiver_name)
+        db.send_msg(key,message,sender_name,receiver_name)
 
         emit("incoming", (f"{sender_name}: {message}"), to=room_id)
     else:
@@ -92,14 +82,26 @@ def join(sender_name, receiver_name):
         emit("incoming", (f"{sender_name} has joined the room.", "green"), to=room_id, include_self=False)
         # emit only to the sender
         emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"))
-        return room_id
+      
+        
 
-    # if the user isn't inside of any room, 
-    # perhaps this user has recently left a room
-    # or is simply a new user looking to chat with someone
-    room_id = room.create_room(sender_name, receiver_name)
-    join_room(room_id)
-    emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"), to=room_id)
+    else:
+        # if the user isn't inside of any room, 
+        # perhaps this user has recently left a room
+        # or is simply a new user looking to chat with someone
+        room_id = room.create_room(sender_name, receiver_name)
+        join_room(room_id)
+        emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"), to=room_id)
+            #is online
+        onlineUsr.add(sender_name)
+
+    # display message_history
+    all_msg = db.display_msg(sender_name,receiver_name)
+    all_msg = all_msg if all_msg is not None else []
+    for msg in all_msg:
+        emit("incoming", (msg, "blue"), to=int(room_id)) 
+
+
     return room_id
 
 # leave room event handler
@@ -107,6 +109,7 @@ def join(sender_name, receiver_name):
 def leave(username, room_id):
     emit("incoming", (f"{username} has left the room.", "red"), to=room_id)
     leave_room(room_id)
+    onlineUsr.remove(username)
     room.leave_room(username)
 ###########################################chatroom######################################
 
