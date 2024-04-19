@@ -140,8 +140,3 @@ def reset_db():
     # Recreate tables
     Base.metadata.create_all(engine)
 
-# reset_db()
-print(get_allfri('username1'))
-print(get_allrev('username1'))
-print(get_allsend('username1'))
-
