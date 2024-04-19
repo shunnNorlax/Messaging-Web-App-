@@ -18,8 +18,8 @@ import secrets
 app = Flask(__name__)
 
 # SSL certificate and key files 
-# CERT_PATH = "./certs/myCA.pem" 
-# KEY_PATH = "./certs/myCA.key"
+CERT_PATH = "./certs/myCA.pem" 
+KEY_PATH = "./certs/myCA.key"
 
 # secret key used to sign the session cookie
 app.config['SECRET_KEY'] = secrets.token_hex()
@@ -96,10 +96,5 @@ def home():
 
 
 if __name__ == '__main__':
-    socketio.run(app,debug=True)
-    # socketio.run(app, ssl_context=(CERT_PATH, KEY_PATH),debug=True)
-
-# db.get_alluser()
-db.get_allfri('username1')
-db.get_allrev('username1')
-db.get_allsend('username1')
+    # socketio.run(app,debug=True)
+    socketio.run(app, ssl_context=(CERT_PATH, KEY_PATH),debug=True)
