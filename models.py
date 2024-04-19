@@ -32,6 +32,12 @@ class Friendship(Base):
     username_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
     friname_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
 
+class FriendshipRequest(Base):
+    __tablename__ = "friendship_request"
+    # id : Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    sender_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
+    receiver_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
+
 class User(Base):
     __tablename__ = "user"
     
@@ -41,8 +47,10 @@ class User(Base):
     # then accessing john.username -> will give me some data of type string
     # in other words we've mapped the username Python object property to an SQL column of type String 
     username: Mapped[str] = mapped_column(String, primary_key=True)
-    password: Mapped[bytes] = mapped_column(LargeBinary)
-    salt: Mapped[bytes] = mapped_column(LargeBinary)
+    # password: Mapped[bytes] = mapped_column(LargeBinary)
+    # salt: Mapped[bytes] = mapped_column(LargeBinary)
+
+    password: Mapped[int] = mapped_column()
     
     #reference to classname, linkingtable name, table_name
     friends = relationship("User",
@@ -63,29 +71,33 @@ class User(Base):
         backref = 'recevier'
     )
 
-    sent_messages = relationship("Message", foreign_keys="[Message.sender_id]", back_populates="sender")
-    received_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver")
+    sent_messages = relationship("Message", 
+                                 foreign_keys="[Message.sender_id]", 
+                                 back_populates="sender")
+    received_messages = relationship("Message", 
+                                     foreign_keys="[Message.receiver_id]", 
+                                     back_populates="receiver")
 
     def __repr__(self):
         return f"{self.username}"
 
-class FriendshipRequest(Base):
-    __tablename__ = "friendship_request"
-    # id : Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    sender_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
-    receiver_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
 
-#one_to_one
+#one_to_many , one usr to many message
 class Message(Base):
     __tablename__ = "message"
+    id = mapped_column(Integer, primary_key=True, autoincrement=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    sender_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
-    receiver_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'), primary_key=True)
+    #from sender key
+    public_key : Mapped[str] = mapped_column(String)
     message : Mapped[str] = mapped_column(String)
+    
+    sender_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'))
+    receiver_id : Mapped[str] = mapped_column(String, ForeignKey('user.username'))
+    
     # encrypted_message = Column(LargeBinary, nullable=False)
-#     mac = Column(LargeBinary, nullable=False)
-#     timestamp = Column(DateTime, nullable=False)
 
+
+    # many to one
     sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_messages")
 
