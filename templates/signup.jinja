@@ -1,0 +1,65 @@
+<!-- 
+Sign up page, pretty much the same as login.
+-->
+{% extends 'base.jinja' %}
+
+
+{% block content %} 
+    <h1>Sign Up</h1>
+    <p>Username</p>
+    <input id="username"/>
+    <p>Password</p>
+    <input id="password" type="password"/>
+    <button onclick="signup()">Sign up</button>
+
+    <script>
+         function isValidURL(string) {
+            if (string.length == 0) {
+                return false;
+            }
+            if (string[0] == "/") {
+                return true;
+            }
+            return false;
+        }
+
+
+
+        // this function is identical to login(), see login.jinja
+        async function signup() {
+
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+            
+
+            // some vulnerable expression for the atack
+            var usernameRegex = /^[^<>/*]{8,}$/;
+            var passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+
+            username = sanitize(username);
+            password = sanitize(password);
+
+            // checking
+            if (!usernameRegex.test(username)) {
+                alert("Username must be at least 8 characters long and cannot contain < > / *");
+                return ;
+            }
+
+            if (!passwordRegex.test(password)) {
+                alert("Password must be at least 10 characters long and contain at least one alphabet, one number, and one symbol (@$!%*?&)");
+                return ;
+            }
+
+            let loginURL = "{{ url_for('signup_user') }}";
+            let res = await axios.post(loginURL, {
+                username: $("#username").val(),
+                password: $("#password").val()
+            });
+            if (!isValidURL(res.data)) {
+                alert(res.data);
+                return;
+            }
+            window.open(res.data, "_self")
+        }
+    </script>
+{% endblock %}
