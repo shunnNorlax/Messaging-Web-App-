@@ -56,7 +56,10 @@
         <h4>Friends List</h4>
         <ul>
             {% for user in all_fris %}
-                <li>{{ user }}</li>
+                <li>
+                <button onclick="chat_fri('{{ user }}')">{{ user }}</button> 
+                </li>
+                
             {% endfor %}
         </ul>
         
@@ -103,6 +106,7 @@
 
 
     let room_id = 0;
+    
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -138,8 +142,12 @@
     // Here's the Socket IO part of the code
     // things get a bit complicated here so brace yourselves :P
     let username = "{{ username }}";
+    let receiver;
+    let public_key = '1';
 
     Cookies.set('username', username);
+    //Cookies.set('username', receiver);
+
 
     // initializes the socket
     const socket = io();
@@ -152,14 +160,15 @@
     // we'll send the message to the server by emitting a "send" event
     function send() {
         let message = $("#message").val();
+        console.log(receiver);
         $("#message").val("");
-        socket.emit("send", username, message, room_id);  
+        socket.emit("send", username,receiver, message, room_id);  
     } 
 
     // we emit a join room event to the server to join a room
     function join_room() {
        
-        let receiver = $("#receiver").val();
+        receiver = $("#receiver").val();
 
         // pass in the receiver of our message to the server
         // as well as the current user's username
@@ -174,6 +183,9 @@
             // set the room id variable to the room id returned by the server
             room_id = res;
             Cookies.set("room_id", room_id);
+            
+            //get chat history
+
 
             // now we'll show the input box, so the user can input their message
             $("#chat_box").hide();
@@ -199,11 +211,29 @@
         box.append(child);
     }
 
+    //////////////////////////chat room ////////////////////////
+    function chat_fri(recv) {
+        receiver = recv;
+        socket.emit("join", username, recv, (res) => {
+
+            if (typeof res != "number") {
+                alert(res);
+                return;
+            }
+            room_id = res;
+            Cookies.set("room_id", room_id);
+
+
+            $("#chat_box").hide();
+            $("#input_box").show();
+        });
+     
+    }
 
     /////////////////////////////////////////friend_list//////////////////////////
     //add_fri
     function add_fri(){
-        let friendUsername = sanitize($("#add_friname").val());
+        let friendUsername = $("#add_friname").val();
         //console.log(friendUsername);
         //$("#add_friname").val("");
         
@@ -219,6 +249,8 @@
     function reject_fri(sender){
         socket.emit("disapprove", sender, username);
     }
+
+
 
 
     

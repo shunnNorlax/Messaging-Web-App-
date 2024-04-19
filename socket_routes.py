@@ -17,19 +17,32 @@ from models import Room
 import db
 
 room = Room()
+onlineUsr = set()
 
 # when the client connects to a socket
 # this event is emitted when the io() function is called in JS
 @socketio.on('connect')
 def connect():
     username = request.cookies.get("username")
+    # receiver = request.cookies.get("receiver")
     room_id = request.cookies.get("room_id")
     if room_id is None or username is None:
         return
     # socket automatically leaves a room on client disconnect
     # so on client connect, the room needs to be rejoined
     join_room(int(room_id))
+
+    # display message_history
+    # all_msg = db.display_msg(username,receiver)
+    # friList = friList if friList is not None else []
+    # for msg in all_msg:
+    #     emit("incoming", (msg, "blue"), to=int(room_id))
+
     emit("incoming", (f"{username} has connected", "green"), to=int(room_id))
+    
+    #is online
+    onlineUsr.add(username)
+    emit("incoming", (f"{onlineUsr} is online", "green"), to=int(room_id))
 
 # event when client disconnects
 # quite unreliable use sparingly
@@ -41,11 +54,20 @@ def disconnect():
         return
     emit("incoming", (f"{username} has disconnected", "red"), to=int(room_id))
 
+    onlineUsr.remove(username)
+
 # send message event handler
 @socketio.on("send")
-def send(username, message, room_id):
-    emit("incoming", (f"{username}: {message}"), to=room_id)
-    
+def send(sender_name, receiver_name, message, room_id):
+    emit("incoming", (f"{onlineUsr} is online", "green"), to=int(room_id))
+    if receiver_name in onlineUsr:
+
+        # send to db
+        # db.send_msg(key,message,sender_name,receiver_name)
+
+        emit("incoming", (f"{sender_name}: {message}"), to=room_id)
+    else:
+        emit("incoming", (f"{receiver_name} not online"), to=room_id)
 # join room event handler
 # sent when the user joins a room
 @socketio.on("join")
@@ -86,7 +108,11 @@ def leave(username, room_id):
     emit("incoming", (f"{username} has left the room.", "red"), to=room_id)
     leave_room(room_id)
     room.leave_room(username)
+###########################################chatroom######################################
 
+
+
+###########################################friendlist####################################
 #sendrequest
 @socketio.on('send_request')
 def send_request(sender, receiver):

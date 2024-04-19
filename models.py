@@ -47,10 +47,10 @@ class User(Base):
     # then accessing john.username -> will give me some data of type string
     # in other words we've mapped the username Python object property to an SQL column of type String 
     username: Mapped[str] = mapped_column(String, primary_key=True)
-    # password: Mapped[bytes] = mapped_column(LargeBinary)
-    # salt: Mapped[bytes] = mapped_column(LargeBinary)
+    password: Mapped[bytes] = mapped_column(LargeBinary)
+    salt: Mapped[bytes] = mapped_column(LargeBinary)
 
-    password: Mapped[int] = mapped_column()
+    # password: Mapped[int] = mapped_column()
     
     #reference to classname, linkingtable name, table_name
     friends = relationship("User",

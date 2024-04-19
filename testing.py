@@ -178,15 +178,15 @@ def display_msg(sender: str, receiver):
 
 
 reset_db()
-insert_user('usr1',1234)
-insert_user('usr2',1234)
-insert_user('usr3',1234)
+# insert_user('usr1',1234)
+# insert_user('usr2',1234)
+# insert_user('usr3',1234)
 
 print(get_alluser())
-send_msg("1","hello","usr1",'usr2')
-send_msg("2","hi","usr2",'usr1')
-# 1 to 3
-send_msg("1","hello","usr1",'usr3')
-print(display_msg('usr1','usr2'))
-print(display_msg('usr2','usr1'))
-print(display_msg('usr1','usr3'))
+# send_msg("1","hello","usr1",'usr2')
+# send_msg("2","hi","usr2",'usr1')
+# # 1 to 3
+# send_msg("1","hello","usr1",'usr3')
+print(display_msg('username1','username2'))
+# print(display_msg('usr2','usr1'))
+# print(display_msg('usr1','usr3'))

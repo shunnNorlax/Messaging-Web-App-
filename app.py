@@ -91,10 +91,11 @@ def home():
     friList = db.get_allfri(username)
     frirequestList = db.get_allrev(username)
 
-    friList = friList if friList is not None else ['hi']
+    friList = friList if friList is not None else []
     return render_template("home.jinja", username=username, all_fris=friList, friend_requests=frirequestList)
 
 
 if __name__ == '__main__':
     # socketio.run(app,debug=True)
     socketio.run(app, ssl_context=(CERT_PATH, KEY_PATH),debug=True)
+
