@@ -26,7 +26,13 @@ context = ssl.SSLContext()
 context.load_cert_chain(CERT_PATH, KEY_PATH)
 
 # secret key used to sign the session cookie
-app.config['SECRET_KEY'] = secrets.token_hex()
+app.config.update(
+    DEBUG=True,
+    SECRET_KEY=secrets.token_hex(),
+    SESSION_COOKIE_HTTPONLY=True,
+    REMEMBER_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Strict",
+)
 socketio = SocketIO(app)
 
 # session timeout
