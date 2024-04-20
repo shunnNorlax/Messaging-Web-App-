@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asymmetric Encryption Example</title>
+</head>
+<body>
+  <script>
+    // Function to generate asymmetric key pair from a password
+    async function generateKeyPairFromPassword(password) {
+      // Convert the password to a key using PBKDF2
+      const passwordBuffer = new TextEncoder().encode(password);
+      const keyMaterial = await window.crypto.subtle.importKey(
+        "raw",
+        passwordBuffer,
+        { name: "PBKDF2" },
+        false,
+        ["deriveBits", "deriveKey"]
+      );
+    
+      // Derive a key from the password using PBKDF2
+      const salt = window.crypto.getRandomValues(new Uint8Array(16)); // Salt
+      const iterations = 100000; // Number of iterations
+      const keyLength = 256; // Key length
+      const derivedKey = await window.crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: salt,
+          iterations: iterations,
+          hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: keyLength }, // Using AES-GCM for key generation
+        true,
+        ["encrypt", "decrypt"]
+      );
+    
+      // Use the derived key to generate an asymmetric key pair
+      const keyPair = await window.crypto.subtle.generateKey(
+        {
+          name: "RSA-OAEP",
+          modulusLength: 2048,
+          publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 65537
+          hash: "SHA-256"
+        },
+        true,
+        ["encrypt", "decrypt"]
+      );
+    
+      return { privateKey: keyPair.privateKey, publicKey: keyPair.publicKey, derivedKey: derivedKey };
+    }
+    
+    // Example usage
+    async function exampleKeyPairFromPassword() {
+      const password = "yourPassword";
+      
+      try {
+        // Generate key pair
+        const { privateKey, publicKey, derivedKey } = await generateKeyPairFromPassword(password);
+        console.log("Private Key:", privateKey);
+        console.log("Public Key:", publicKey);
+        console.log("Derived Key:", derivedKey);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+    
+    // Function to encrypt data using the public key
+    async function encryptData(data, publicKey) {
+      const encodedData = new TextEncoder().encode(data);
+      const encryptedData = await window.crypto.subtle.encrypt(
+        {
+          name: "RSA-OAEP"
+        },
+        publicKey,
+        encodedData
+      );
+      return encryptedData;
+    }
+    
+
+    //whenever encrypt 
+    // Function to decrypt data using the private key
+
+    async function decryptData(encryptedData, privateKey) {
+      const decryptedData = await window.crypto.subtle.decrypt(
+        {
+          name: "RSA-OAEP"
+        },
+        privateKey,
+        encryptedData
+      );
+      const decodedData = new TextDecoder().decode(decryptedData);
+      return decodedData;
+    }
+    
+    // Example usage
+    async function exampleEncryptDecrypt() {
+      const password = "yourPassword";
+      const dataToEncrypt = "Hello, world!";
+      
+      try {
+        // Generate key pair
+        const { privateKey, publicKey } = await generateKeyPairFromPassword(password);
+        const { privateKey1, publicKey1 } = await generateKeyPairFromPassword(password);
+        
+        // Encrypt data
+        const encryptedData = await encryptData(dataToEncrypt, publicKey);
+        console.log("Encrypted Data:", new Uint8Array(encryptedData));
+    
+        // Decrypt data
+        const decryptedData = await decryptData(encryptedData, privateKey);
+        console.log("Decrypted Data:", decryptedData);
+
+        // how to make the encrypted data to be able to decrypt with the new derived from the same private key
+        const decryptedData1 = await decryptData(encryptedData, privateKey1);
+        console.log("Decrypted Data1:", decryptedData1);
+
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+    
+    exampleEncryptDecrypt();
+  </script>
+</body>
+</html>

@@ -63,7 +63,11 @@ def send(sender_name, receiver_name,key, message, room_id):
 # sent when the user joins a room
 @socketio.on("join")
 def join(sender_name, receiver_name):
-    
+
+    friList = db.get_allfri(sender_name)
+    friList = friList if friList is not None else []    
+    # emit("incoming", (f"{friList} are fri. Type: {type(friList[0])}", "red"))
+
     receiver = db.get_user(receiver_name)
     if receiver is None:
         return "Unknown receiver!"
@@ -71,6 +75,21 @@ def join(sender_name, receiver_name):
     sender = db.get_user(sender_name)
     if sender is None:
         return "Unknown sender!"
+
+    # not friend
+    # if receiver not in friList:
+    #     return f"{receiver} not in fri list"
+
+    # Convert receiver_name to string // as type not the same
+    receiver_name_str = str(receiver_name)
+    found = False
+    for friend in friList:
+        if str(friend.username) == receiver_name_str:
+            found = True
+            break
+
+    if not found:
+        return f"{receiver} not in fri list"
 
     room_id = room.get_room_id(receiver_name)
     #is online
