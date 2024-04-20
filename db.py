@@ -154,10 +154,12 @@ def send_msg(key: str,content : str, sender: str, receiver):
         if send and rev:
             message = Message(public_key=key,message=content,sender_id=send.username,receiver_id=rev.username)
             session.add(message)
+            formatted_message = f"{send.username}: {content}"
         else:
             print("User not found.")
         
-        session.commit()      
+        session.commit() 
+        return formatted_message     
 
 def display_msg(sender: str, receiver):
     with Session(engine) as session:

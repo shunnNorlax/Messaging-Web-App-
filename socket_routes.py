@@ -53,9 +53,10 @@ def send(sender_name, receiver_name,key, message, room_id):
     if receiver_name in onlineUsr:
 
         # send to db
-        db.send_msg(key,message,sender_name,receiver_name)
+        msg = db.send_msg(key,message,sender_name,receiver_name)
+        emit("incoming", (f"{msg}"), to=room_id)
 
-        emit("incoming", (f"{sender_name}: {message}"), to=room_id)
+        # emit("incoming", (f"{sender_name}: {message}"), to=room_id)
     else:
         emit("incoming", (f"{receiver_name} not online"), to=room_id)
 # join room event handler
@@ -72,7 +73,8 @@ def join(sender_name, receiver_name):
         return "Unknown sender!"
 
     room_id = room.get_room_id(receiver_name)
-
+    #is online
+    onlineUsr.add(sender_name)
     # if the user is already inside of a room 
     if room_id is not None:
         
@@ -82,7 +84,12 @@ def join(sender_name, receiver_name):
         emit("incoming", (f"{sender_name} has joined the room.", "green"), to=room_id, include_self=False)
         # emit only to the sender
         emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"))
-      
+            # display message_history
+        all_msg = db.display_msg(sender_name,receiver_name)
+        all_msg = all_msg if all_msg is not None else []
+        for msg in all_msg:
+            emit("incoming", (msg, "blue")) 
+        return room_id
         
 
     else:
@@ -92,14 +99,13 @@ def join(sender_name, receiver_name):
         room_id = room.create_room(sender_name, receiver_name)
         join_room(room_id)
         emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"), to=room_id)
-            #is online
-        onlineUsr.add(sender_name)
 
-    # display message_history
-    all_msg = db.display_msg(sender_name,receiver_name)
-    all_msg = all_msg if all_msg is not None else []
-    for msg in all_msg:
-        emit("incoming", (msg, "blue"), to=int(room_id)) 
+        all_msg = db.display_msg(sender_name,receiver_name)
+        all_msg = all_msg if all_msg is not None else []
+        for msg in all_msg:
+            emit("incoming", (msg, "blue"), to=int(room_id)) 
+
+
 
 
     return room_id
