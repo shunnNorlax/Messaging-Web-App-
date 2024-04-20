@@ -4,10 +4,12 @@ this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
 '''
 
-from flask import Flask, render_template, request, abort, url_for
+from flask import Flask, render_template, request, abort, url_for, session
 from flask_socketio import SocketIO
 import db
 import secrets
+import ssl
+from datetime import timedelta
 
 # import logging
 
@@ -18,12 +20,27 @@ import secrets
 app = Flask(__name__)
 
 # SSL certificate and key files 
-CERT_PATH = "./certs/myCA.pem" 
-KEY_PATH = "./certs/myCA.key"
+CERT_PATH = "./certs/localhost+2.pem" 
+KEY_PATH = "./certs/localhost+2-key.pem"
+context = ssl.SSLContext()
+context.load_cert_chain(CERT_PATH, KEY_PATH)
 
 # secret key used to sign the session cookie
-app.config['SECRET_KEY'] = secrets.token_hex()
+app.config.update(
+    DEBUG=True,
+    SECRET_KEY=secrets.token_hex(),
+    SESSION_COOKIE_HTTPONLY=True,
+    REMEMBER_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Strict",
+)
 socketio = SocketIO(app)
+
+# session timeout
+@app.before_request
+def before_request():
+    session.permanent = True
+    # Change to shorter minutes value to test
+    app.permanent_session_lifetime = timedelta(minutes=10)
 
 # don't remove this!!
 import socket_routes
@@ -31,11 +48,21 @@ import socket_routes
 # index page
 @app.route("/")
 def index():
+    # remove session data if exists
+    if "username" in session:
+        # clear session data
+        session.pop("username", default=None)
+
     return render_template("index.jinja")
 
 # login page
 @app.route("/login")
-def login():    
+def login():
+    # remove session data if exists
+    if "username" in session:
+        # clear session data
+        session.pop("username", default=None)
+
     return render_template("login.jinja")
 
 # handles a post request when the user clicks the log in button
@@ -43,6 +70,11 @@ def login():
 def login_user():
     if not request.is_json:
         abort(404)
+    
+    # remove session data if exists
+    if "username" in session:
+        # clear session data
+        session.pop("username", default=None)
 
     username = request.json.get("username")
     password = request.json.get("password")
@@ -56,12 +88,20 @@ def login_user():
 
     if user.password != in_password:
         return "Error: Password does not match!"
+    
+    # save to session object
+    session["username"] = username
 
-    return url_for('home', username=request.json.get("username"))
+    return url_for('home')
 
 # handles a get request to the signup page
 @app.route("/signup")
 def signup():
+    # remove session data if exists
+    if "username" in session:
+        # clear session data
+        session.pop("username", default=None)
+
     return render_template("signup.jinja")
 
 # handles a post request when the user clicks the signup button
@@ -69,12 +109,21 @@ def signup():
 def signup_user():
     if not request.is_json:
         abort(404)
+    
+    # remove session data if exists
+    if "username" in session:
+        # clear session data
+        session.pop("username", default=None)
+    
     username = request.json.get("username")
     password = request.json.get("password")
 
     if db.get_user(username) is None:
         db.insert_user(username, password)
-        return url_for('home', username=username)
+        # save to session object
+        session["username"] = username
+        return url_for('home')
+    
     return "Error: User already exists!"
 
 # handler when a "404" error happens
@@ -85,17 +134,28 @@ def page_not_found(_):
 # home page, where the messaging app is
 @app.route("/home")
 def home():
-    username = request.args.get("username")
-    if username is None:
-        abort(404)
-    friList = db.get_allfri(username)
-    frirequestList = db.get_allrev(username)
+    if "username" in session:
+        username = session["username"]
+        if username is None:
+            abort(404)
+        friList = db.get_allfri(username)
+        frirequestList = db.get_allrev(username)
 
-    friList = friList if friList is not None else []
-    return render_template("home.jinja", username=username, all_fris=friList, friend_requests=frirequestList)
+        friList = friList if friList is not None else ['hi']
+        return render_template("home.jinja", all_fris=friList, friend_requests=frirequestList)
+    else:
+        return render_template("login.jinja")
+
+# handles when the user clicks the log out button
+@app.route("/logout")
+def logout():
+    # clear session data
+    session.pop("username", default=None)
+    return render_template("logout.jinja")
 
 
 if __name__ == '__main__':
     # socketio.run(app,debug=True)
-    socketio.run(app, ssl_context=(CERT_PATH, KEY_PATH),debug=True)
+
+    socketio.run(app, ssl_context=context,debug=True)
 

@@ -1,0 +1,11 @@
+<!-- 
+    Logout page, user is redirected here when the user clicks on Logout.
+-->
+
+{% extends 'base.jinja' %}
+
+{% block content %} 
+    <h1>You have been logged out</h1>
+    <p><a href={{ url_for('index') }}> Return to home page</a></p>
+    
+{% endblock %}
