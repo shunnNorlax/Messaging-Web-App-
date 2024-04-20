@@ -29,6 +29,8 @@ salt + hash (remember the salt )
 
 store form -- user |  pwd _ hash and salt
 
+Sessions and Cookies
+https://www.techwithtim.net/tutorials/flask/sessions
 
 >>>> extension >>> force usr to do strong password 
 (e.g) at least a symbol and one number one alphabet
