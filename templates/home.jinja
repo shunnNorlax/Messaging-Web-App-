@@ -40,7 +40,7 @@
 <nav style="border-bottom: 1px solid black;">
 
     <ol style="float: right">
-        <li style="display:inline-block">Username:  {{ username }} </li>
+        <li style="display:inline-block">Username:  {{ session["username"] }} </li>
         <p><a href={{ url_for('logout') }}> Logout</a></p>
     </ol>
 </nav>
@@ -138,7 +138,7 @@
     
     // Here's the Socket IO part of the code
     // things get a bit complicated here so brace yourselves :P
-    let username = "{{ username }}";
+    let username = "{{ session["username"] }}";
 
     Cookies.set('username', username);
 

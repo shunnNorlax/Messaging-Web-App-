@@ -136,7 +136,7 @@ def home():
         frirequestList = db.get_allrev(username)
 
         friList = friList if friList is not None else ['hi']
-        return render_template("home.jinja", username=username, all_fris=friList, friend_requests=frirequestList)
+        return render_template("home.jinja", all_fris=friList, friend_requests=frirequestList)
     else:
         return render_template("login.jinja")
 
