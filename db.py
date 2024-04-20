@@ -4,6 +4,7 @@ database file, containing all the logic to interface with the sql database
 '''
 
 from sqlalchemy import create_engine
+from sqlalchemy import *
 from sqlalchemy.orm import Session
 from models import *
 
@@ -139,4 +140,47 @@ def reset_db():
     Base.metadata.drop_all(engine)
     # Recreate tables
     Base.metadata.create_all(engine)
+
+
+
+# send message
+def send_msg(key: str,content : str, sender: str, receiver):
+    with Session(engine) as session:
+        #get usr
+        send = session.query(User).filter_by(username=sender).first()
+        rev = session.query(User).filter_by(username=receiver).first()
+
+        # Check if both user and friend exist
+        if send and rev:
+            message = Message(public_key=key,message=content,sender_id=send.username,receiver_id=rev.username)
+            session.add(message)
+            formatted_message = f"{send.username}: {content}"
+        else:
+            print("User not found.")
+        
+        session.commit() 
+        return formatted_message     
+
+def display_msg(sender: str, receiver):
+    with Session(engine) as session:
+        send = session.query(User).filter_by(username=sender).first()
+        rev = session.query(User).filter_by(username=receiver).first()
+
+        if send and rev:
+            messages = session.query(Message).filter(
+                or_(
+                    and_(Message.sender_id == send.username, Message.receiver_id == rev.username),
+                    and_(Message.sender_id == rev.username, Message.receiver_id == send.username)
+                )
+            ).order_by(Message.timestamp).all()
+
+            formatted_messages = []
+            for message in messages:
+                formatted_messages.append(f"{message.timestamp} - {message.sender.username}: {message.message}")
+
+            return formatted_messages
+
+        else:
+            print("User not found.")
+        
 
