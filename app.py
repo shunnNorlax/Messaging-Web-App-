@@ -4,7 +4,7 @@ this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
 '''
 
-from flask import Flask, render_template, request, abort, url_for, session
+from flask import Flask, render_template, redirect, request, abort, url_for, session
 from flask_socketio import SocketIO
 import db
 import secrets
@@ -48,20 +48,18 @@ import socket_routes
 # index page
 @app.route("/")
 def index():
-    # remove session data if exists
+    # redirect home if session data exists
     if "username" in session:
-        # clear session data
-        session.pop("username", default=None)
+        return redirect(url_for('home'))
 
     return render_template("index.jinja")
 
 # login page
 @app.route("/login")
 def login():
-    # remove session data if exists
+    # redirect home if session data exists
     if "username" in session:
-        # clear session data
-        session.pop("username", default=None)
+        return redirect(url_for('home'))
 
     return render_template("login.jinja")
 
@@ -71,10 +69,9 @@ def login_user():
     if not request.is_json:
         abort(404)
     
-    # remove session data if exists
+    # redirect home if session data exists
     if "username" in session:
-        # clear session data
-        session.pop("username", default=None)
+        return redirect(url_for('home'))
 
     username = request.json.get("username")
     password = request.json.get("password")
@@ -97,10 +94,9 @@ def login_user():
 # handles a get request to the signup page
 @app.route("/signup")
 def signup():
-    # remove session data if exists
+    # redirect home if session data exists
     if "username" in session:
-        # clear session data
-        session.pop("username", default=None)
+        return redirect(url_for('home'))
 
     return render_template("signup.jinja")
 
@@ -110,10 +106,9 @@ def signup_user():
     if not request.is_json:
         abort(404)
     
-    # remove session data if exists
+    # redirect home if session data exists
     if "username" in session:
-        # clear session data
-        session.pop("username", default=None)
+        return redirect(url_for('home'))
     
     username = request.json.get("username")
     password = request.json.get("password")
@@ -144,7 +139,7 @@ def home():
         friList = friList if friList is not None else ['hi']
         return render_template("home.jinja", all_fris=friList, friend_requests=frirequestList)
     else:
-        return render_template("login.jinja")
+        return redirect(url_for('login'))
 
 # handles when the user clicks the log out button
 @app.route("/logout")
