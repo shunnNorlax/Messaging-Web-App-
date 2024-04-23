@@ -1,0 +1,44 @@
+{% extends 'home.jinja' %}
+
+
+{% block content %} 
+   <style>
+
+    #fri_list_box {
+        border: 1px solid black;
+        height: 400px;
+        width: 400px;
+        overflow: auto;
+        padding: 2px;
+        float: left; 
+        margin-left: 10px; 
+    }
+
+</style>
+
+    <div id="fri_list_box " class = "div_refresh">
+        <input type="text" id="add_friname" placeholder="enter friend's username">
+        <button onclick="add_fri()">Add</button> 
+        {# id = add_friname, input type  #}
+        <h4>Friends List</h4>
+        <ul>
+            {% for user in all_fris %}
+                <li>
+                <button onclick="chat_fri('{{ user }}')">{{ user }}</button> 
+                </li>
+                
+            {% endfor %}
+        </ul>
+        
+        <h4>FriendsRequest List</h4>
+        <ul>
+            {% for request in friend_requests %}
+                <li>{{ request }} 
+                    <button onclick="accept_fri('{{ request }}')">Accept</button> 
+                    <button onclick="reject_fri('{{ request }}')">Reject</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}

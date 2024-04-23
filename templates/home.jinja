@@ -20,7 +20,7 @@
         float: left; 
     }
 
-    #fri_list_box {
+    #friList_box {
         border: 1px solid black;
         height: 400px;
         width: 400px;
@@ -50,56 +50,36 @@
 <main> 
    <!-- User list box -->
    
-    <section id="fri_list_box">
-        <input type="text" id="add_friname" placeholder="enter friend's username">
-        <button onclick="add_fri()">Add</button> 
-        {# id = add_friname, input type  #}
-        <h4>Friends List</h4>
-        <ul>
-            {% for user in all_fris %}
-                <li>
-                <button onclick="chat_fri('{{ user }}')">{{ user }}</button> 
-                </li>
-                
-            {% endfor %}
-        </ul>
-        
-        <h4>FriendsRequest List</h4>
-        <ul>
-            {% for request in friend_requests %}
-                <li>{{ request }} 
-                    <button onclick="accept_fri('{{ request }}')">Accept</button> 
-                    <button onclick="reject_fri('{{ request }}')">Reject</button>
-                </li>
-            {% endfor %}
-        </ul>
-    </section>
+    {# friend list box  #}
+    <div id="friList_box">
+        {% include 'friList_box.jinja' %}
+    </div>
 
     <!-- The messages are displayed here -->
-    <section id="message_box">
+    <div id="message_box">
     
-    </section>
+    </div>
 
 
 
     <!-- These part ideally should be a form element, 
     but I wrote this code a year ago and I don't want to break anything...-->
-    <section id="chat_box">
+    <div id="chat_box">
         <p class="text">Chat with: </p>
         <input id="receiver" placeholder="username">
         <!-- MDN says its bad practice to use the onclick attribute,
         but we're using it anyways coz its easy :)-->
         <button onclick="join_room()">Chat</button>
-    </section>
+    </div>
 
     <!-- The (message) input box is set to display: none initially, 
     this means the input box is "invisible" initially-->
-    <section id="input_box" style="display: none" >
+    <div id="input_box" style="display: none" >
         <p class="text">Message: </p>
         <input id="message" placeholder="message">
         <button onclick="send()">Send</button>
         <button onclick="leave()">Leave Room</button>
-    </section>
+    </div>
 </main>
 
 <script src="/static/js/libs/socket.io.min.js"></script>
@@ -107,7 +87,6 @@
 
 
     let room_id = 0;
-    
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -142,10 +121,8 @@
     
     // Here's the Socket IO part of the code
     // things get a bit complicated here so brace yourselves :P
-
+    
     let receiver;
-    let public_key = '1';
-
     let username = "{{ session["username"] }}";
 
 
@@ -155,20 +132,69 @@
 
     // initializes the socket
     const socket = io();
+    var public_key;
+    var private_key;
+    var shared_key;
+    
 
+
+    // generater key
+    // link for RSA encryption with JSEN lib https://www.npmjs.com/package/jsencrypt
+    function generateRSAkeyPair() {
+        var encrypt = new JSEncrypt({ default_key_size: 2048 });//1024 -- less strong
+        encrypt.getKey();
+        return {
+            publicKey: encrypt.getPublicKey(),
+            privateKey: encrypt.getPrivateKey()
+        };
+    }
+        // generate thekey
+        const keyPair = generateRSAkeyPair();
+        public_key = keyPair.publicKey;
+        private_key = keyPair.privateKey;
+        //console.log('Public key:',public_key);
+        //console.log('Private key:',private_key);
+    
     // an incoming message arrives, we'll add the message to the message box
     socket.on("incoming", (msg, color="black") => {
         add_message(msg, color);
     })
     
+    // send_msg only on recieved side
+    socket.on("send_msg", function(msg, color="black") {
+
+        var decrypt = new JSEncrypt();
+        decrypt.setPrivateKey(private_key);
+        var plaintext = decrypt.decrypt(msg);
+        //console.log(plaintext);
+        // encrypt and store to database (not shown in this code)
+
+        add_message(plaintext, color);
+    });
+
+
+    // share key
+    socket.on('share_key', function(key) {
+        shared_key = key;
+        console.log('Shared key:', key);
+        //to check in the console that when click the pubic key is shared or not
+    });
+    
     // we'll send the message to the server by emitting a "send" event
     function send() {
-        let message = $("#message").val();
+        let message = $("#message").val();// let within the { } scope
         console.log(receiver);
-        console.log(public_key);
+
+        //encryption
+        var encrypt = new JSEncrypt();
+        encrypt.setPublicKey(shared_key);
+        ciphertext = encrypt.encrypt(message);
+        console.log(ciphertext);
 
         $("#message").val("");
-        socket.emit("send", username,receiver, public_key,message, room_id);  
+        socket.emit("send", username,receiver, public_key,ciphertext, room_id); 
+        // display msg in sender side 
+        add_message(username + ": " + message, "black");
     } 
 
     // we emit a join room event to the server to join a room
@@ -176,9 +202,11 @@
        
         receiver = $("#receiver").val();
 
+
+
         // pass in the receiver of our message to the server
         // as well as the current user's username
-        socket.emit("join", username, receiver, (res) => {
+        socket.emit("join", username, receiver, public_key, (res) => {
             // res is a string with the error message if the error occurs
             // this is a pretty bad way of doing error handling, but watevs
             if (typeof res != "number") {
@@ -220,8 +248,10 @@
     //////////////////////////chat room ////////////////////////
     function chat_fri(recv) {
         console.log(room_id);
+        console.log(private_key);
         receiver = recv;
-        socket.emit("join", username, recv, (res) => {
+        
+        socket.emit("join", username, recv, public_key, (res) => {
 
             if (typeof res != "number") {
                 alert(res);
@@ -256,7 +286,6 @@
     function reject_fri(sender){
         socket.emit("disapprove", sender, username);
     }
-
 
 
 
