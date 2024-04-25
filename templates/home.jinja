@@ -51,9 +51,9 @@
    <!-- User list box -->
    
     {# friend list box  #}
-    <div id="friList_box">
+    <ul id="friList_box">
         {% include 'friList_box.jinja' %}
-    </div>
+    </ul>
 
     <!-- The messages are displayed here -->
     <div id="message_box">
@@ -269,23 +269,7 @@
 
     /////////////////////////////////////////friend_list//////////////////////////
     //add_fri
-    function add_fri(){
-        let friendUsername = $("#add_friname").val();
-        //console.log(friendUsername);
-        //$("#add_friname").val("");
-        
-        // Send the friend's username to the server
-        socket.emit("send_request", username, friendUsername);
-    }
 
-    function accept_fri(sender){
-
-        socket.emit("approve", sender, username);
-    }
-
-    function reject_fri(sender){
-        socket.emit("disapprove", sender, username);
-    }
 
 
 

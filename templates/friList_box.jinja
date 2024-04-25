@@ -1,4 +1,5 @@
 {% extends 'home.jinja' %}
+{# only use in home page #}
 
 
 {% block content %} 
@@ -16,14 +17,16 @@
 
 </style>
 
-    <div id="fri_list_box " class = "div_refresh">
+    <div id="fri_list_box ">
         <input type="text" id="add_friname" placeholder="enter friend's username">
         <button onclick="add_fri()">Add</button> 
         {# id = add_friname, input type  #}
         <h4>Friends List</h4>
         <ul>
+            <p>val: {{ x }}</p>
             {% for user in all_fris %}
                 <li>
+                <button onclick="updateFriendList()">update</button>
                 <button onclick="chat_fri('{{ user }}')">{{ user }}</button> 
                 </li>
                 
@@ -40,5 +43,45 @@
             {% endfor %}
         </ul>
     </div>
+
+<script src="/static/js/libs/socket.io.min.js"></script>
+
+<script>
+
+
+    function add_fri(){
+        let friendUsername = $("#add_friname").val();
+        //console.log(friendUsername);
+        //$("#add_friname").val("");
+        
+        // Send the friend's username to the server
+        socket.emit("send_request", username, friendUsername);
+        updateFriendList();
+    }
+
+    function accept_fri(sender){
+
+        socket.emit("approve", sender, username);
+        updateFriendList();
+    }
+
+    function reject_fri(sender){
+        socket.emit("disapprove", sender, username);
+        updateFriendList();
+    }
+
+    function updateFriendList() {
+        console.log("updated");
+        $.ajax({
+            url: '/get_friList',
+            success: function(data) {
+                $('#friList_box').html(data);
+            }
+        });
+    }
+
+
+</script>
+
 
 {% endblock %}

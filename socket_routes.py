@@ -180,3 +180,13 @@ def disapprove(sender, receiver):
         return "Error: User does not exist!"
     
     db.disapprove(sender, receiver)
+
+
+# @socketio.on('updateFriList')
+# def updateFriList(username):
+#     friList = db.get_allfri(username)
+#     frirequestList = db.get_allrev(username)
+
+#     friList = friList if friList is not None else []
+#     x = 3
+#     emit('friListUpdated', {'friends': friList, 'friendRequests': frirequestList})

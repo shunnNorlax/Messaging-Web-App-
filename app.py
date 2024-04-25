@@ -4,7 +4,7 @@ this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
 '''
 
-from flask import Flask, render_template, request, abort, url_for, session
+from flask import Flask, render_template, request, abort, url_for, session,redirect
 from flask_socketio import SocketIO
 import db
 import secrets
@@ -132,6 +132,15 @@ def signup_user():
 def page_not_found(_):
     return render_template('404.jinja'), 404
 
+# @app.route("/home")
+# def home():
+#     if "username" in session:
+#         username = session["username"]
+#         if username is None:
+#             abort(404)
+#         return render_template("home.jinja")
+#     else:
+#         return render_template("login.jinja")
 
 @app.route("/home")
 def home():
@@ -142,23 +151,23 @@ def home():
         friList = db.get_allfri(username)
         frirequestList = db.get_allrev(username)
 
-        friList = friList if friList is not None else ['hi']
+        friList = friList if friList is not None else []
         return render_template("home.jinja", all_fris=friList, friend_requests=frirequestList)
     else:
         return render_template("login.jinja")
-    
+
 # fri page
-@app.route("/friList_box")
-def friList_box():
+@app.route("/get_friList")
+def get_friList():
     if "username" in session:
-        username = session["username"]
+        username = session.get("username")
         if username is None:
             abort(404)
         friList = db.get_allfri(username)
         frirequestList = db.get_allrev(username)
-
+        x = 3
         friList = friList if friList is not None else []
-        return render_template("friList_box.jinja", all_fris=friList, friend_requests=frirequestList)
+        return render_template("friList_box.jinja", x=x,all_fris=friList, friend_requests=frirequestList)
 
 
 # handles when the user clicks the log out button
