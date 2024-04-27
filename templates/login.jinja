@@ -35,13 +35,28 @@
             // login_user()
             // so... "{{ url_for('login_user')}}" 
             // gives us -> "http://blabla/login/user"
-            let loginURL = "{{ url_for('login_user') }}";
-            let username = $("#username").val(); 
-            let password = $("#password").val(); 
 
-            // Sanitize inputs using the .sanitize() function
-            //username = sanitize(username);
-            //password = sanitize(password);
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+            
+
+            // some vulnerable expression for the attack
+            var usernameRegex = /^[^<>/*]{8,}$/;
+            var passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+
+            // checking
+            if (!usernameRegex.test(username)) {
+                alert("Username must be at least 8 characters long and cannot contain < > / *");
+                return ;
+            }
+
+            if (!passwordRegex.test(password)) {
+                alert("Password must be at least 10 characters long and contain at least one alphabet, one number, and one symbol (@$!%*?&)");
+                return ;
+            }
+
+            let loginURL = "{{ url_for('login_user') }}";
+
 
             // axios post is a fancy way of posting a request to the server,
             // we pass in the username and password here
