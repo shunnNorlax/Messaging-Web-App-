@@ -1,0 +1,87 @@
+{% extends 'home.jinja' %}
+{# only use in home page #}
+
+
+{% block content %} 
+   <style>
+
+    #fri_list_box {
+        border: 1px solid black;
+        height: 400px;
+        width: 400px;
+        overflow: auto;
+        padding: 2px;
+        float: left; 
+        margin-left: 10px; 
+    }
+
+</style>
+
+    <div id="fri_list_box ">
+        <input type="text" id="add_friname" placeholder="enter friend's username">
+        <button onclick="add_fri()">Add</button> 
+        {# id = add_friname, input type  #}
+        <h4>Friends List</h4>
+        <ul>
+
+            {% for user in all_fris %}
+                <li>
+                
+                <button onclick="chat_fri('{{ user }}')">{{ user }}</button> 
+                </li>
+                
+            {% endfor %}
+        </ul>
+        
+        <h4>FriendsRequest List</h4>
+        <ul>
+            {% for request in friend_requests %}
+                <li>{{ request }} 
+                    <button onclick="accept_fri('{{ request }}')">Accept</button> 
+                    <button onclick="reject_fri('{{ request }}')">Reject</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+<script src="/static/js/libs/socket.io.min.js"></script>
+
+<script>
+
+
+    function add_fri(){
+        let friendUsername = $("#add_friname").val();
+        //console.log(friendUsername);
+        //$("#add_friname").val("");
+        
+        // Send the friend's username to the server
+        socket.emit("send_request", username, friendUsername);
+        updateFriendList();
+    }
+
+    function accept_fri(sender){
+
+        socket.emit("approve", sender, username);
+        updateFriendList();
+    }
+
+    function reject_fri(sender){
+        socket.emit("disapprove", sender, username);
+        updateFriendList();
+    }
+
+    function updateFriendList() {
+        console.log("updated");
+        $.ajax({
+            url: '/get_friList',
+            success: function(data) {
+                $('#friList_box').html(data);
+            }
+        });
+    }
+
+
+</script>
+
+
+{% endblock %}

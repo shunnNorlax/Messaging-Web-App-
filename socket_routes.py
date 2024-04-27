@@ -49,20 +49,23 @@ def disconnect():
 # send message event handler
 @socketio.on("send")
 def send(sender_name, receiver_name,key, message, room_id):
-    emit("incoming", (f"{onlineUsr} is online", "green"), to=int(room_id))
+    # emit("incoming", (f"{onlineUsr} is online", "green"), to=int(room_id))
     if receiver_name in onlineUsr:
 
         # send to db
+        
         msg = db.send_msg(key,message,sender_name,receiver_name)
-        emit("incoming", (f"{msg}"), to=room_id)
+        emit("send_msg", [sender_name,message], to=room_id, include_self=False)
 
         # emit("incoming", (f"{sender_name}: {message}"), to=room_id)
     else:
         emit("incoming", (f"{receiver_name} not online"), to=room_id)
+
+
 # join room event handler
 # sent when the user joins a room
 @socketio.on("join")
-def join(sender_name, receiver_name):
+def join(sender_name, receiver_name, public_key):
 
     friList = db.get_allfri(sender_name)
     friList = friList if friList is not None else []    
@@ -103,7 +106,11 @@ def join(sender_name, receiver_name):
         emit("incoming", (f"{sender_name} has joined the room.", "green"), to=room_id, include_self=False)
         # emit only to the sender
         emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"))
-            # display message_history
+        
+        # emit the public_key #" " here is to front end of the user aka js
+        emit("share_key", public_key, to=room_id, include_self=False)
+
+        # display message_history
         all_msg = db.display_msg(sender_name,receiver_name)
         all_msg = all_msg if all_msg is not None else []
         for msg in all_msg:
@@ -173,3 +180,13 @@ def disapprove(sender, receiver):
         return "Error: User does not exist!"
     
     db.disapprove(sender, receiver)
+
+
+# @socketio.on('updateFriList')
+# def updateFriList(username):
+#     friList = db.get_allfri(username)
+#     frirequestList = db.get_allrev(username)
+
+#     friList = friList if friList is not None else []
+#     x = 3
+#     emit('friListUpdated', {'friends': friList, 'friendRequests': frirequestList})

@@ -50,6 +50,8 @@ class User(Base):
     password: Mapped[bytes] = mapped_column(LargeBinary)
     salt: Mapped[bytes] = mapped_column(LargeBinary)
 
+    # key_fromchatroom : Mapped[str] = mapped_column(String)
+
     # password: Mapped[int] = mapped_column()
     
     #reference to classname, linkingtable name, table_name
