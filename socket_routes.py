@@ -52,14 +52,18 @@ def send(sender_name, receiver_name,key, message, room_id):
     # emit("incoming", (f"{onlineUsr} is online", "green"), to=int(room_id))
     if receiver_name in onlineUsr:
 
-        # send to db
-        
-        msg = db.send_msg(key,message,sender_name,receiver_name)
+        #send only to receiver side
         emit("send_msg", [sender_name,message], to=room_id, include_self=False)
 
         # emit("incoming", (f"{sender_name}: {message}"), to=room_id)
     else:
         emit("incoming", (f"{receiver_name} not online"), to=room_id)
+
+
+@socketio.on("store_msg")
+def store_msg(sender_name, receiver_name,key, message):
+    # send to db
+    db.send_msg(key,message,sender_name,receiver_name)
 
 
 # join room event handler

@@ -166,8 +166,11 @@
         var decrypt = new JSEncrypt();
         decrypt.setPrivateKey(private_key);
         var plaintext = decrypt.decrypt(msg);
-        //console.log(plaintext);
-        // encrypt and store to database (not shown in this code)
+        const key = 'receiver_side'
+        // encrypt and store to database with it is key
+        socket.emit("store_msg",sender_name,username,key,plaintext);
+
+
         var plaintext_msg = sender_name + ": " + plaintext;
 
         add_message(plaintext_msg, color="black");
