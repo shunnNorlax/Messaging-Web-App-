@@ -161,35 +161,36 @@
     })
     
     // send_msg only on recieved side
-    socket.on("send_msg", function(msg, color="black") {
-
+    socket.on("send_msg", function(data) {
+        var [sender_name, msg] = data;
         var decrypt = new JSEncrypt();
         decrypt.setPrivateKey(private_key);
         var plaintext = decrypt.decrypt(msg);
         //console.log(plaintext);
         // encrypt and store to database (not shown in this code)
+        var plaintext_msg = sender_name + ": " + plaintext;
 
-        add_message(plaintext, color);
+        add_message(plaintext_msg, color="black");
     });
 
 
     // share key
     socket.on('share_key', function(key) {
         shared_key = key;
-        console.log('Shared key:', key);
+        //console.log('Shared key:', key);
         //to check in the console that when click the pubic key is shared or not
     });
     
     // we'll send the message to the server by emitting a "send" event
     function send() {
         let message = $("#message").val();// let within the { } scope
-        console.log(receiver);
+        //console.log(receiver);
 
         //encryption
         var encrypt = new JSEncrypt();
         encrypt.setPublicKey(shared_key);
         ciphertext = encrypt.encrypt(message);
-        console.log(ciphertext);
+        //console.log(ciphertext);
 
         $("#message").val("");
         socket.emit("send", username,receiver, public_key,ciphertext, room_id); 
@@ -218,7 +219,7 @@
             room_id = res;
             Cookies.set("room_id", room_id);
             
-            //get chat history
+            //get chat himessagestory
 
 
             // now we'll show the input box, so the user can input their message
@@ -247,8 +248,8 @@
 
     //////////////////////////chat room ////////////////////////
     function chat_fri(recv) {
-        console.log(room_id);
-        console.log(private_key);
+        //console.log(room_id);
+        //console.log(private_key);
         receiver = recv;
         
         socket.emit("join", username, recv, public_key, (res) => {

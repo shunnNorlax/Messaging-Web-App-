@@ -23,10 +23,10 @@
         {# id = add_friname, input type  #}
         <h4>Friends List</h4>
         <ul>
-            <p>val: {{ x }}</p>
+
             {% for user in all_fris %}
                 <li>
-                <button onclick="updateFriendList()">update</button>
+                
                 <button onclick="chat_fri('{{ user }}')">{{ user }}</button> 
                 </li>
                 

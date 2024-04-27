@@ -55,7 +55,7 @@ def send(sender_name, receiver_name,key, message, room_id):
         # send to db
         
         msg = db.send_msg(key,message,sender_name,receiver_name)
-        emit("send_msg", message, to=room_id, include_self=False)
+        emit("send_msg", [sender_name,message], to=room_id, include_self=False)
 
         # emit("incoming", (f"{sender_name}: {message}"), to=room_id)
     else:
